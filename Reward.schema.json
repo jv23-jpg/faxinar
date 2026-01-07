@@ -1,0 +1,36 @@
+{
+  "name": "Reward",
+  "type": "object",
+  "properties": {
+    "cleaner_email": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "consecutive_five_stars",
+        "milestone",
+        "bonus"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid"
+      ],
+      "default": "pending"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cleaner_email",
+    "type",
+    "amount"
+  ]
+}

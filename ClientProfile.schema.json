@@ -1,0 +1,53 @@
+{
+  "name": "ClientProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "cpf": {
+      "type": "string"
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "complement": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total_bookings": {
+      "type": "number",
+      "default": 0
+    },
+    "favorite_cleaners": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "user_email",
+    "full_name",
+    "phone"
+  ]
+}

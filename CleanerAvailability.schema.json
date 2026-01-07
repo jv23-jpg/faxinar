@@ -1,0 +1,46 @@
+{
+  "name": "CleanerAvailability",
+  "type": "object",
+  "properties": {
+    "cleaner_email": {
+      "type": "string",
+      "description": "Email da faxineira"
+    },
+    "default_availability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day_of_week": {
+            "type": "number",
+            "description": "0=Domingo, 6=S\u00e1bado"
+          },
+          "time_slots": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Hor\u00e1rios dispon\u00edveis neste dia"
+          }
+        }
+      },
+      "description": "Disponibilidade padr\u00e3o mensal"
+    },
+    "blocked_dates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      },
+      "description": "Datas espec\u00edficas bloqueadas"
+    },
+    "month_year": {
+      "type": "string",
+      "description": "M\u00eas/ano da agenda (YYYY-MM)"
+    }
+  },
+  "required": [
+    "cleaner_email",
+    "month_year"
+  ]
+}

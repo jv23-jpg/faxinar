@@ -1,0 +1,52 @@
+{
+  "name": "Fine",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "ID do pedido relacionado"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "cleaner_cancellation",
+        "client_mandatory"
+      ],
+      "description": "Tipo de multa"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Valor da multa"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "affected_email": {
+      "type": "string",
+      "description": "Email de quem recebeu a multa"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "waived"
+      ],
+      "default": "pending"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "request_id",
+    "type",
+    "amount",
+    "affected_email"
+  ]
+}

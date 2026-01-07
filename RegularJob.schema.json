@@ -1,0 +1,70 @@
+{
+  "name": "RegularJob",
+  "type": "object",
+  "properties": {
+    "client_email": {
+      "type": "string",
+      "description": "Email do contratante"
+    },
+    "cleaner_email": {
+      "type": "string",
+      "description": "Email da faxineira atribu\u00edda"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "padrao",
+        "com_organizacao",
+        "pos_obra"
+      ],
+      "default": "padrao"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "semanal",
+        "quinzenal",
+        "mensal"
+      ],
+      "description": "Frequ\u00eancia do servi\u00e7o regular"
+    },
+    "day_of_week": {
+      "type": "number",
+      "description": "Dia da semana (0=Domingo, 6=S\u00e1bado)"
+    },
+    "time": {
+      "type": "string",
+      "description": "Hor\u00e1rio do servi\u00e7o"
+    },
+    "hours": {
+      "type": "number"
+    },
+    "include_products": {
+      "type": "boolean",
+      "default": false
+    },
+    "address": {
+      "type": "string"
+    },
+    "address_complement": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_generated_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u00daltima data que foi gerado um pedido autom\u00e1tico"
+    }
+  },
+  "required": [
+    "client_email",
+    "frequency",
+    "day_of_week",
+    "time",
+    "hours",
+    "address"
+  ]
+}

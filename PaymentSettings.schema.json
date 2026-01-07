@@ -1,0 +1,47 @@
+{
+  "name": "PaymentSettings",
+  "type": "object",
+  "properties": {
+    "pix_key": {
+      "type": "string"
+    },
+    "pix_key_type": {
+      "type": "string",
+      "enum": [
+        "cpf",
+        "cnpj",
+        "email",
+        "phone",
+        "random"
+      ]
+    },
+    "bank_name": {
+      "type": "string"
+    },
+    "agency_fee_percentage": {
+      "type": "number",
+      "default": 40
+    },
+    "first_hour_price": {
+      "type": "number",
+      "default": 40
+    },
+    "additional_hour_price": {
+      "type": "number",
+      "default": 20
+    },
+    "products_price": {
+      "type": "number",
+      "default": 30
+    },
+    "reward_bonus": {
+      "type": "number",
+      "default": 50
+    },
+    "reward_threshold": {
+      "type": "number",
+      "default": 10
+    }
+  },
+  "required": []
+}

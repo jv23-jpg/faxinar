@@ -1,0 +1,67 @@
+{
+  "name": "Withdrawal",
+  "type": "object",
+  "properties": {
+    "cleaner_email": {
+      "type": "string",
+      "description": "Email da faxineira"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Valor solicitado"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "paid",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "pix_key": {
+      "type": "string",
+      "description": "Chave PIX para pagamento"
+    },
+    "pix_key_type": {
+      "type": "string",
+      "enum": [
+        "cpf",
+        "cnpj",
+        "email",
+        "phone",
+        "random"
+      ],
+      "description": "Tipo de chave PIX"
+    },
+    "recipient_name": {
+      "type": "string",
+      "description": "Nome completo do destinat\u00e1rio"
+    },
+    "recipient_address": {
+      "type": "string",
+      "description": "Endere\u00e7o completo do destinat\u00e1rio para comprovante"
+    },
+    "request_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "processed_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payment_proof_url": {
+      "type": "string",
+      "description": "URL do comprovante de pagamento"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cleaner_email",
+    "amount",
+    "pix_key"
+  ]
+}

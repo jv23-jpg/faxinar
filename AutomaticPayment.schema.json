@@ -1,0 +1,48 @@
+{
+  "name": "AutomaticPayment",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "ID do pedido"
+    },
+    "cleaner_email": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Valor a ser pago para a faxineira"
+    },
+    "pix_key": {
+      "type": "string",
+      "description": "Chave PIX da faxineira"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "payment_proof_url": {
+      "type": "string",
+      "description": "URL do comprovante"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "request_id",
+    "cleaner_email",
+    "amount",
+    "pix_key"
+  ]
+}

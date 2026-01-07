@@ -1,0 +1,74 @@
+{
+  "name": "CleanerProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "cpf": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "available": {
+      "type": "boolean",
+      "default": true
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "total_cleanings": {
+      "type": "number",
+      "default": 0
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "consecutive_five_stars": {
+      "type": "number",
+      "default": 0
+    },
+    "rewards_earned": {
+      "type": "number",
+      "default": 0
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "available_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Saldo dispon\u00edvel para saque"
+    },
+    "pix_key": {
+      "type": "string"
+    },
+    "bank_info": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_email",
+    "full_name",
+    "phone"
+  ]
+}

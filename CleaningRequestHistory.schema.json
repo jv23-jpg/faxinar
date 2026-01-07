@@ -1,0 +1,40 @@
+{
+  "name": "CleaningRequestHistory",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "ID do pedido de limpeza original"
+    },
+    "snapshot": {
+      "type": "object",
+      "description": "Snapshot completo do estado do pedido naquele momento",
+      "additionalProperties": true
+    },
+    "change_type": {
+      "type": "string",
+      "enum": [
+        "created",
+        "status_updated",
+        "payment_updated",
+        "cleaner_assigned",
+        "completed",
+        "cancelled"
+      ],
+      "description": "Tipo de mudan\u00e7a que gerou esta vers\u00e3o"
+    },
+    "changed_by": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que fez a altera\u00e7\u00e3o"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas sobre a mudan\u00e7a"
+    }
+  },
+  "required": [
+    "request_id",
+    "snapshot",
+    "change_type"
+  ]
+}
