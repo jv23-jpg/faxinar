@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 import { 
   User, 
   Sparkles, 
@@ -35,7 +36,19 @@ export default function Cadastro() {
     address: '',
     city: '',
     bio: '',
-    pix_key: ''
+    pix_key: '',
+    photo_url: '',
+    roupas_claras: true,
+    bank_name: '',
+    agency: '',
+    account_number: '',
+    account_type: '',
+    // company fields
+    company_name: '',
+    cnpj: '',
+    cep: '',
+    contact_name: '',
+    contact_phone: ''
   });
 
   useEffect(() => {
@@ -48,10 +61,16 @@ export default function Cadastro() {
       setUser(userData);
       setFormData(prev => ({ ...prev, full_name: userData.full_name || '' }));
       
-      // Check if user already has a profile
+      // Check if user already has a profile (cleaner, company, client)
       const cleanerProfiles = await base44.entities.CleanerProfile.filter({ user_email: userData.email });
       if (cleanerProfiles.length > 0) {
         setExistingProfile({ type: 'cleaner', data: cleanerProfiles[0] });
+        return;
+      }
+
+      const companyProfiles = await base44.entities.CompanyAccount?.filter ? await base44.entities.CompanyAccount.filter({ user_email: userData.email }) : [];
+      if (companyProfiles.length > 0) {
+        setExistingProfile({ type: 'company', data: companyProfiles[0] });
         return;
       }
       
@@ -82,7 +101,16 @@ export default function Cadastro() {
         address: formData.address,
         city: formData.city,
         bio: formData.bio,
+        photo_url: formData.photo_url,
         pix_key: formData.pix_key,
+        bank_info: {
+          bank_name: formData.bank_name,
+          agency: formData.agency,
+          account_number: formData.account_number,
+          account_type: formData.account_type,
+          pix_key: formData.pix_key
+        },
+        roupas_claras: formData.roupas_claras,
         available: true,
         verified: false,
         total_cleanings: 0,
@@ -92,16 +120,35 @@ export default function Cadastro() {
         total_earnings: 0
       });
       navigate(createPageUrl('CleanerDashboard'));
+    } else if (userType === 'company') {
+      await base44.entities.CompanyAccount.create({
+        user_email: user.email,
+        company_name: formData.company_name,
+        cnpj: formData.cnpj,
+        contact_name: formData.contact_name,
+        contact_phone: formData.contact_phone,
+        photo_url: formData.photo_url,
+        addresses: formData.address ? [{
+          label: 'Sede',
+          address: formData.address,
+          city: formData.city,
+          cep: formData.cep
+        }] : [],
+        verified: false
+      });
+      navigate(createPageUrl('ClientDashboard'));
     } else {
       await base44.entities.ClientProfile.create({
         user_email: user.email,
         full_name: formData.full_name,
         phone: formData.phone,
         cpf: formData.cpf,
+        photo_url: formData.photo_url,
         addresses: formData.address ? [{
           label: 'Casa',
           address: formData.address,
-          city: formData.city
+          city: formData.city,
+          cep: formData.cep
         }] : [],
         total_bookings: 0,
         favorite_cleaners: []
@@ -124,7 +171,7 @@ export default function Cadastro() {
               Você já está cadastrado!
             </h2>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Seu perfil de {existingProfile.type === 'cleaner' ? 'faxineira' : 'cliente'} já existe.
+              Seu perfil de {existingProfile.type === 'cleaner' ? 'faxineira' : existingProfile.type === 'company' ? 'empresa' : 'cliente'} já existe.
             </p>
             <Button 
               onClick={() => navigate(createPageUrl(existingProfile.type === 'cleaner' ? 'CleanerDashboard' : 'ClientDashboard'))}
@@ -202,6 +249,21 @@ export default function Cadastro() {
                 Logado como {user.email}
               </CardDescription>
             </CardHeader>
+            {user?.role === 'admin' && (
+              <div className="p-4">
+                <Card className="border-0">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">Você é administrador</p>
+                      <p className="text-sm text-slate-500">Use o painel administrativo para criar usuários por e-mail (ex.: cleidycleaner@gmail.com).</p>
+                    </div>
+                    <div>
+                      <Button onClick={() => navigate(createPageUrl('AdminCreateUser'))} className="bg-emerald-500 text-white">Criar Usuário</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
             <CardContent className="p-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* User type selection */}
@@ -232,6 +294,17 @@ export default function Cadastro() {
                         <Briefcase className="w-8 h-8 text-teal-600 mb-2" />
                         <span className="font-medium">Faxineira</span>
                         <span className="text-xs text-slate-500">Quero trabalhar</span>
+                      </Label>
+                    </div>
+                    <div>
+                      <RadioGroupItem value="company" id="company" className="peer sr-only" />
+                      <Label
+                        htmlFor="company"
+                        className="flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all peer-data-[state=checked]:border-emerald-500 peer-data-[state=checked]:bg-emerald-50 dark:peer-data-[state=checked]:bg-emerald-950/50 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      >
+                        <FileText className="w-8 h-8 text-amber-600 mb-2" />
+                        <span className="font-medium">Empresa</span>
+                        <span className="text-xs text-slate-500">Quero cadastrar a empresa</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -292,6 +365,16 @@ export default function Cadastro() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="photo_url">Foto (URL)</Label>
+                  <Input
+                    id="photo_url"
+                    value={formData.photo_url}
+                    onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                    placeholder="https://example.com/minha-foto.jpg"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="address">Endereço</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
@@ -322,7 +405,116 @@ export default function Cadastro() {
                         id="pix_key"
                         value={formData.pix_key}
                         onChange={(e) => setFormData({ ...formData, pix_key: e.target.value })}
-                        placeholder="CPF, email, telefone ou chave aleatória"
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="bank_name">Banco</Label>
+                        <Input
+                          id="bank_name"
+                          value={formData.bank_name}
+                          onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="agency">Agência</Label>
+                        <Input
+                          id="agency"
+                          value={formData.agency}
+                          onChange={(e) => setFormData({ ...formData, agency: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="account_number">Número da conta</Label>
+                        <Input
+                          id="account_number"
+                          value={formData.account_number}
+                          onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="account_type">Tipo de conta</Label>
+                        <Input
+                          id="account_type"
+                          value={formData.account_type}
+                          onChange={(e) => setFormData({ ...formData, account_type: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">Roupas claras</Label>
+                      <Switch
+                        checked={formData.roupas_claras}
+                        onCheckedChange={(val) => setFormData({ ...formData, roupas_claras: val })}
+                      />
+                    </div>
+
+                  </>
+                )}
+
+
+                {userType === 'company' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="company_name">Nome da Empresa *</Label>
+                      <Input
+                        id="company_name"
+                        value={formData.company_name}
+                        onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="cnpj">CNPJ</Label>
+                        <Input
+                          id="cnpj"
+                          value={formData.cnpj}
+                          onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cep">CEP</Label>
+                        <Input
+                          id="cep"
+                          value={formData.cep}
+                          onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="contact_name">Pessoa de contato</Label>
+                        <Input
+                          id="contact_name"
+                          value={formData.contact_name}
+                          onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="contact_phone">Telefone de contato</Label>
+                        <Input
+                          id="contact_phone"
+                          value={formData.contact_phone}
+                          onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="photo_url">Logo / Foto (URL)</Label>
+                      <Input
+                        id="photo_url"
+                        value={formData.photo_url}
+                        onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                        placeholder="https://example.com/logo.jpg"
                       />
                     </div>
                   </>
@@ -343,4 +535,4 @@ export default function Cadastro() {
       )}
     </div>
   );
-} esse
+}

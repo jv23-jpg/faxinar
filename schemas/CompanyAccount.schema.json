@@ -1,0 +1,27 @@
+{
+  "name": "CompanyAccount",
+  "type": "object",
+  "properties": {
+    "user_email": { "type": "string" },
+    "company_name": { "type": "string" },
+    "cnpj": { "type": "string" },
+    "contact_name": { "type": "string" },
+    "contact_phone": { "type": "string" },
+    "photo_url": { "type": "string" },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "address": { "type": "string" },
+          "complement": { "type": "string" },
+          "city": { "type": "string" },
+          "cep": { "type": "string" }
+        }
+      }
+    },
+    "verified": { "type": "boolean", "default": false }
+  },
+  "required": ["user_email", "company_name", "contact_name", "contact_phone"]
+}

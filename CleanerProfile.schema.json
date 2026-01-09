@@ -26,6 +26,11 @@
     "photo_url": {
       "type": "string"
     },
+    "roupas_claras": {
+      "type": "boolean",
+      "default": true,
+      "description": "Preferência por roupas claras"
+    },
     "available": {
       "type": "boolean",
       "default": true
@@ -63,7 +68,14 @@
       "type": "string"
     },
     "bank_info": {
-      "type": "string"
+      "type": "object",
+      "properties": {
+        "bank_name": { "type": "string" },
+        "agency": { "type": "string" },
+        "account_number": { "type": "string" },
+        "account_type": { "type": "string" },
+        "pix_key": { "type": "string" }
+      }
     }
   },
   "required": [

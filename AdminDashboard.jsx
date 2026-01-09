@@ -14,7 +14,8 @@ import {
   Star,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  PlusCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -257,7 +258,7 @@ export default function AdminDashboard() {
       </motion.div>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         <Link to={createPageUrl('AdminCleaners')}>
           <Card className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group">
             <CardContent className="p-6 flex items-center gap-4">
@@ -282,6 +283,21 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-lg text-slate-900 dark:text-white">Configurações</h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm">Preços e pagamentos</p>
+              </div>
+              <ArrowRight className="w-5 h-5 ml-auto text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to={createPageUrl('AdminCreateUser')}>
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <PlusCircle className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg text-slate-900 dark:text-white">Criar Usuário</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Cadastrar usuário por e-mail (cliente, faxineira ou empresa)</p>
               </div>
               <ArrowRight className="w-5 h-5 ml-auto text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
             </CardContent>

@@ -102,23 +102,14 @@ export default function PriceCalculator({
                 <span className="font-medium">R$ {PRODUCTS_PRICE.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-600 dark:text-slate-400">Taxa da agência (40% do serviço)</span>
-              <span className="font-medium text-amber-600">R$ {agencyFee.toFixed(2)}</span>
-            </div>
+
             <div className="flex justify-between pt-3 border-t border-dashed border-emerald-300 dark:border-emerald-700">
               <span className="text-lg font-semibold text-slate-800 dark:text-slate-200">Total</span>
               <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 R$ {totalPrice.toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                Faxineira recebe (serviço)
-              </span>
-              <span>R$ {cleanerEarnings.toFixed(2)}</span>
-            </div>
+
           </div>
         )}
       </CardContent>

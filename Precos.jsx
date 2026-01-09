@@ -221,32 +221,7 @@ export default function Precos() {
         </Card>
       </motion.div>
 
-      {/* Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-      >
-        <Card className="border-0 shadow-lg bg-blue-50 dark:bg-blue-950/30">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
-                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                  Sobre a Taxa da Agência
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  A taxa de 40% garante a operação da plataforma, suporte 24h, verificação de profissionais, 
-                  seguro e garantia de qualidade. Esse valor permite que mantenhamos o serviço funcionando 
-                  com excelência para você e para nossas profissionais.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+
 
       {/* CTA */}
       <div className="text-center">

@@ -447,7 +447,7 @@ export default function Home() {
             },
             {
               q: 'O que está incluído na taxa da agência?',
-              a: 'A taxa de 40% cobre a plataforma, suporte 24h, seguro, verificação de profissionais e garantia de qualidade.'
+              a: 'O valor total já inclui as taxas necessárias para a operação da plataforma e serviços de suporte.'
             },
             {
               q: 'Posso solicitar a mesma faxineira sempre?',

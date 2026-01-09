@@ -30,9 +30,17 @@
           },
           "city": {
             "type": "string"
+          },
+          "cep": {
+            "type": "string",
+            "description": "CEP do endereço"
           }
         }
       }
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL da foto do cliente (perfil)"
     },
     "total_bookings": {
       "type": "number",
