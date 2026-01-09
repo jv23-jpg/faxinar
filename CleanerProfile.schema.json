@@ -39,6 +39,48 @@
       "type": "boolean",
       "default": false
     },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string" },
+          "uploaded_date": { "type": "string", "format": "date-time" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "verification_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "by": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "action": { "type": "string", "enum": ["approved","rejected","requested"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "onboarding": {
+      "type": "object",
+      "properties": {
+        "step": { "type": "number", "default": 0 },
+        "completed": { "type": "boolean", "default": false },
+        "accepted_terms": { "type": "boolean", "default": false }
+      }
+    },
+    "training_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "done": { "type": "boolean", "default": false }
+        }
+      }
+    },
     "total_cleanings": {
       "type": "number",
       "default": 0

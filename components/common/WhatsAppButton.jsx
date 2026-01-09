@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function WhatsAppButton() {
-  const phoneNumber = '5598030740'; // Número da empresa
+  const phoneNumber = '555198033-0422'; // Número da empresa
   const message = encodeURIComponent('Olá! Gostaria de mais informações sobre os serviços da Leidy Cleaner.');
   
   return (

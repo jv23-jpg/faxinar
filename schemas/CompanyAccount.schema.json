@@ -21,7 +21,23 @@
         }
       }
     },
-    "verified": { "type": "boolean", "default": false }
+    "bank_info": {
+      "type": "object",
+      "properties": {
+        "bank_name": { "type": "string" },
+        "agency": { "type": "string" },
+        "account_number": { "type": "string" },
+        "account_type": { "type": "string" },
+        "pix_key": { "type": "string" }
+      }
+    },
+    "verified": { "type": "boolean", "default": false },
+    "bank_verified": { "type": "boolean", "default": false, "description": "Conta bancária validada pelo admin" },
+    "active": { "type": "boolean", "default": true },
+    "created_at": { "type": "string", "description": "Data de criação ISO 8601" },
+    "total_transactions": { "type": "number", "default": 0 },
+    "total_earned": { "type": "number", "default": 0 },
+    "commission_percentage": { "type": "number", "default": 40, "description": "Porcentagem de comiss\u00e3o/taxa da agencia" }
   },
   "required": ["user_email", "company_name", "contact_name", "contact_phone"]
 }

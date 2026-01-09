@@ -30,6 +30,8 @@ export default function AdminCreateUser() {
   });
   const [verified, setVerified] = useState(false);
   const [sendInvite, setSendInvite] = useState(true);
+  const [inviteLink, setInviteLink] = useState(null);
+  const [inviteId, setInviteId] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -96,6 +98,7 @@ export default function AdminCreateUser() {
         return window.alert('Já existe um perfil deste tipo com este e-mail.');
       }
 
+      // create profile depending on type
       if (formData.userType === 'cleaner') {
         await base44.entities.CleanerProfile.create({
           user_email: formData.email,
@@ -133,24 +136,103 @@ export default function AdminCreateUser() {
         navigate(createPageUrl('AdminDashboard'));
       }
 
+      // Generate invite token and store an Invite entity so admin can resend/copy link
+      const token = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+
+      try {
+        if (base44.entities.Invite && base44.entities.Invite.create) {
+          const created = await base44.entities.Invite.create({
+            email: formData.email,
+            token,
+            userType: formData.userType,
+            created_by: currentUser.email,
+            created_date: new Date().toISOString(),
+            expires_at: expiresAt,
+            sent: !!sendInvite,
+            used: false
+          });
+          if (created && created.id) setInviteId(created.id);
+        } else {
+          console.info('Entidade Invite não disponível no backend; registrando localmente apenas.');
+        }
+      } catch (err) {
+        console.warn('Erro ao criar entidade Invite:', err);
+      }
+
+      // Audit: record that admin created a user and generated an invite
+      try {
+        const { auditLog } = await import('./utils/audit');
+        await auditLog({ actor: currentUser?.email || 'admin', action: 'create_user', entity: formData.userType, entity_id: formData.email, details: { invite_token: token } });
+      } catch (err) { console.warn('Audit failed:', err); }
+
+      const inviteLink = `${window.location.origin}/activate?token=${token}`;
+      // if configured, attempt to send via base44.api.sendInvite (prefer) or our local /api/send-invite
       if (sendInvite) {
-        // Placeholder: sending email invites should be implemented server-side
         try {
-          // Attempting a simple API call if backend supports it; otherwise this is a placeholder
           if (base44.api && base44.api.sendInvite) {
-            await base44.api.sendInvite({ email: formData.email, type: formData.userType });
+            await base44.api.sendInvite({ email: formData.email, type: formData.userType, link: inviteLink, from: currentUser.email });
+            window.alert('Convite enviado por e-mail com sucesso.');
           } else {
-            // fallback: show info
-            console.info('Convite não enviado automaticamente — implemente envio de e-mail server-side.');
+            // fallback: call our server endpoint
+            const { sendInvite } = await import('./utils/sendInvite');
+            try {
+              await sendInvite({ email: formData.email, type: formData.userType, link: inviteLink, from: currentUser.email });
+              window.alert('Convite enviado por e-mail (via servidor local) com sucesso.');
+            } catch (err) {
+              console.warn('Erro ao enviar via servidor local:', err);
+              window.alert('Convite criado. Copie o link de ativação exibido na tela.');
+            }
           }
         } catch (err) {
           console.warn('Erro ao enviar convite:', err);
+          window.alert('Erro ao enviar convite automaticamente. O link foi gerado para copiar/manualmente enviar.');
         }
+      } else {
+        window.alert('Usuário criado. Convite não enviado automaticamente.');
       }
+
+      // expose link in UI for admin convenience (state)
+      setTimeout(() => {
+        // slight delay to ensure UI navigation doesn't swallow message; set a state property
+        setInviteLink(inviteLink);
+      }, 200);
 
     } catch (err) {
       console.error(err);
       window.alert('Erro ao criar usuário. Verifique o console.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopyInvite = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      window.alert('Link copiado para a área de transferência');
+    } catch (err) {
+      console.error('Erro ao copiar link:', err);
+      window.alert(inviteLink);
+    }
+  };
+
+  const handleResendInvite = async () => {
+    if (!inviteLink) return;
+    setLoading(true);
+    try {
+      if (base44.api && base44.api.sendInvite) {
+        await base44.api.sendInvite({ email: formData.email, type: formData.userType, link: inviteLink, from: currentUser.email });
+        if (inviteId && base44.entities.Invite && base44.entities.Invite.update) {
+          await base44.entities.Invite.update(inviteId, { sent: true });
+        }
+        window.alert('Convite reenviado com sucesso.');
+      } else {
+        window.alert('Envio automático não disponível no backend. Copie o link para enviar manualmente.');
+      }
+    } catch (err) {
+      console.error(err);
+      window.alert('Erro ao reenviar o convite.');
     } finally {
       setLoading(false);
     }
@@ -239,6 +321,18 @@ export default function AdminCreateUser() {
               <Button type="submit" className="bg-gradient-to-r from-emerald-500 to-teal-600" disabled={loading}>{loading ? 'Criando...' : 'Criar Usuário'}</Button>
               <Button variant="outline" onClick={() => navigate(createPageUrl('AdminDashboard'))}>Cancelar</Button>
             </div>
+
+            {inviteLink && (
+              <div className="mt-4 p-4 border rounded bg-slate-50">
+                <Label>E-mail de convite: <span className="font-medium">{formData.email}</span></Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <Input readOnly value={inviteLink} className="flex-1" />
+                  <Button onClick={handleCopyInvite}>Copiar</Button>
+                  <Button onClick={handleResendInvite} disabled={loading}>Reenviar</Button>
+                </div>
+                <p className="text-sm text-slate-500 mt-2">Link expira em 7 dias.</p>
+              </div>
+            )}
 
           </form>
         </CardContent>

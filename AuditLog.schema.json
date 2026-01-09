@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuditLog",
+  "type": "object",
+  "properties": {
+    "actor": { "type": "string" },
+    "action": { "type": "string" },
+    "entity": { "type": "string" },
+    "entity_id": { "type": ["string", "number"] },
+    "details": { "type": "object" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["actor", "action", "created_at"]
+}

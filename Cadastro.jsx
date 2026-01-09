@@ -134,9 +134,22 @@ export default function Cadastro() {
           city: formData.city,
           cep: formData.cep
         }] : [],
-        verified: false
+        bank_info: {
+          bank_name: formData.bank_name,
+          agency: formData.agency,
+          account_number: formData.account_number,
+          account_type: formData.account_type,
+          pix_key: formData.pix_key
+        },
+        verified: false,
+        bank_verified: false,
+        active: true,
+        created_at: new Date().toISOString(),
+        total_transactions: 0,
+        total_earned: 0,
+        commission_percentage: 40
       });
-      navigate(createPageUrl('ClientDashboard'));
+      navigate(createPageUrl('CompanyDashboard'));
     } else {
       await base44.entities.ClientProfile.create({
         user_email: user.email,
@@ -174,7 +187,11 @@ export default function Cadastro() {
               Seu perfil de {existingProfile.type === 'cleaner' ? 'faxineira' : existingProfile.type === 'company' ? 'empresa' : 'cliente'} já existe.
             </p>
             <Button 
-              onClick={() => navigate(createPageUrl(existingProfile.type === 'cleaner' ? 'CleanerDashboard' : 'ClientDashboard'))}
+              onClick={() => navigate(createPageUrl(
+                existingProfile.type === 'cleaner' ? 'CleanerDashboard' : 
+                existingProfile.type === 'company' ? 'CompanyDashboard' : 
+                'ClientDashboard'
+              ))}
               className="bg-gradient-to-r from-emerald-500 to-teal-600"
             >
               Ir para o Dashboard
@@ -516,6 +533,62 @@ export default function Cadastro() {
                         onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
                         placeholder="https://example.com/logo.jpg"
                       />
+                    </div>
+
+                    <div className="border-t border-slate-200 dark:border-slate-700 pt-6 mt-6">
+                      <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Dados Bancários</h3>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bank_name">Banco</Label>
+                          <Input
+                            id="bank_name"
+                            value={formData.bank_name}
+                            onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                            placeholder="Ex: Itau, Bradesco..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="agency">Agência</Label>
+                          <Input
+                            id="agency"
+                            value={formData.agency}
+                            onChange={(e) => setFormData({ ...formData, agency: e.target.value })}
+                            placeholder="0001"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="account_number">Número da conta</Label>
+                          <Input
+                            id="account_number"
+                            value={formData.account_number}
+                            onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                            placeholder="12345-6"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="account_type">Tipo de conta</Label>
+                          <Input
+                            id="account_type"
+                            value={formData.account_type}
+                            onChange={(e) => setFormData({ ...formData, account_type: e.target.value })}
+                            placeholder="Corrente / Poupança"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 mt-4">
+                        <Label htmlFor="pix_key_company">Chave PIX</Label>
+                        <Input
+                          id="pix_key_company"
+                          value={formData.pix_key}
+                          onChange={(e) => setFormData({ ...formData, pix_key: e.target.value })}
+                          placeholder="CPF, email, telefone ou chave aleatória"
+                        />
+                      </div>
                     </div>
                   </>
                 )}

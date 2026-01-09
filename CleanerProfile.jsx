@@ -70,12 +70,71 @@ export default function CleanerProfile() {
     setLoading(false);
   };
 
+  const handleUploadDocument = async (file) => {
+    setLoading(true);
+    try {
+      let url = null;
+      if (file && base44.api && base44.api.uploadFile) {
+        const res = await base44.api.uploadFile(file);
+        url = res?.url || null;
+      }
+      if (!url && typeof file === 'string') {
+        url = file; // assume it's a url
+      }
+      if (!url) {
+        return toast.error('Upload não disponível. Use URL.');
+      }
+
+      const documents = profile.documents ? [...profile.documents] : [];
+      documents.push({ url, uploaded_date: new Date().toISOString() });
+      await base44.entities.CleanerProfile.update(profile.id, { documents });
+      await loadProfile();
+      toast.success('Documento adicionado');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao enviar documento');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveDocument = async (idx) => {
+    if (!confirm('Remover este documento?')) return;
+    setLoading(true);
+    try {
+      const documents = profile.documents ? profile.documents.filter((_, i) => i !== idx) : [];
+      await base44.entities.CleanerProfile.update(profile.id, { documents });
+      await loadProfile();
+      toast.success('Documento removido');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao remover documento');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!profile) {
     return <div className="text-center py-12 text-slate-500">Carregando...</div>;
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
+
+      {/* Onboarding banner */}
+      {!profile.onboarding?.completed && (
+        <div className="p-4 rounded bg-amber-50 border border-amber-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">Você está em fase de treinamento!</h3>
+              <p className="text-sm text-slate-600">Complete o onboarding para ativar sua conta e começar a receber limpezas.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => navigate(createPageUrl('CleanerOnboarding'))}>Ir para Onboarding</Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Meu Perfil</h1>
         <p className="text-slate-600 dark:text-slate-400">Gerencie suas informações profissionais</p>
@@ -201,6 +260,92 @@ export default function CleanerProfile() {
                   placeholder="Conte sobre sua experiência e especialidades..."
                   className="min-h-[100px]"
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Documents */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="w-5 h-5 text-emerald-600" />
+                Documentos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Enviar documento (URL ou arquivo)</Label>
+                <div className="flex gap-2">
+                  <input type="file" className="hidden" id="doc-upload-input" onChange={(e)=>{
+                    const f = e.target.files && e.target.files[0]; if (f) handleUploadDocument(f);
+                  }} />
+                  <label htmlFor="doc-upload-input" className="btn btn-sm bg-emerald-500 text-white px-3 py-2 rounded">Selecionar arquivo</label>
+                  <Button variant="outline" onClick={()=>{
+                    const url = prompt('Cole a URL do documento'); if (url) handleUploadDocument(url);
+                  }}>Usar URL</Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {(profile.documents || []).length === 0 ? (
+                  <p className="text-sm text-slate-500">Nenhum documento enviado.</p>
+                ) : (
+                  <div className="grid gap-2">
+                    {(profile.documents || []).map((d, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 rounded bg-slate-50 dark:bg-slate-800">
+                        <a href={d.url} target="_blank" rel="noreferrer" className="text-sm text-emerald-600">Abrir documento</a>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">{new Date(d.uploaded_date).toLocaleString()}</span>
+                          <Button size="sm" variant="ghost" onClick={()=>handleRemoveDocument(idx)}>Remover</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Verification status & history */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="w-5 h-5 text-emerald-600" />
+                Verificação
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="font-medium">Status: {profile.verified ? <span className="text-emerald-600">Verificada</span> : <span className="text-amber-600">Pendente</span>}</p>
+                <p className="text-sm text-slate-500 mt-1">Seu perfil é revisado por um administrador. Você receberá uma notificação quando a verificação for aprovada ou rejeitada.</p>
+              </div>
+
+              <div>
+                <h4 className="font-medium">Histórico</h4>
+                {(profile.verification_history || []).length === 0 ? (
+                  <p className="text-sm text-slate-500">Sem histórico de verificação.</p>
+                ) : (
+                  <div className="space-y-2 mt-2">
+                    {(profile.verification_history || []).map((h, idx) => (
+                      <div key={idx} className="p-3 rounded bg-slate-50 dark:bg-slate-800">
+                        <div className="text-sm text-slate-700"><strong>{h.action}</strong> por {h.by} em {new Date(h.date).toLocaleString()}</div>
+                        {h.note && <div className="text-sm text-slate-500 mt-1">{h.note}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

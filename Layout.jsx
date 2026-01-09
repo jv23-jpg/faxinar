@@ -83,6 +83,7 @@ export default function Layout({ children, currentPageName }) {
     if (user.role === 'admin') {
       return [
         { name: 'Dashboard', page: 'AdminDashboard', icon: Shield },
+        { name: 'Usuários', page: 'AdminUsers', icon: Users },
         { name: 'Faxineiras', page: 'AdminCleaners', icon: Users },
         { name: 'Pedidos', page: 'AdminRequests', icon: Calendar },
         { name: 'Saques', page: 'AdminWithdrawals', icon: Sparkles },
@@ -92,13 +93,18 @@ export default function Layout({ children, currentPageName }) {
     }
 
     if (userProfile?.type === 'cleaner') {
-      return [
+      const base = [
         { name: 'Meus Serviços', page: 'CleanerDashboard', icon: Home },
         { name: 'Agenda', page: 'CleanerSchedule', icon: Calendar },
         { name: 'Disponibilidade', page: 'CleanerAvailability', icon: Calendar },
         { name: 'Saques', page: 'CleanerWithdrawals', icon: Sparkles },
         { name: 'Perfil', page: 'CleanerProfile', icon: User },
       ];
+      // if onboarding not completed, show Treinamento link
+      if (!userProfile.data?.onboarding?.completed) {
+        base.splice(4, 0, { name: 'Treinamento', page: 'CleanerOnboarding', icon: ClipboardList });
+      }
+      return base;
     }
 
     return [

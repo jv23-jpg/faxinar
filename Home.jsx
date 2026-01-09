@@ -58,10 +58,10 @@ export default function Home() {
   return (
     <div className="space-y-20">
       {/* Hero Section */}
-      <section className="relative">
+      <section className="hero relative">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-200 dark:bg-emerald-800/30 rounded-full blur-3xl opacity-50" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-200 dark:bg-teal-800/30 rounded-full blur-3xl opacity-50" />
+          <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 dark:bg-green-800/30 rounded-full blur-3xl opacity-50" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-lime-200 dark:bg-lime-800/30 rounded-full blur-3xl opacity-50" />
         </div>
 
         <div className="text-center max-w-4xl mx-auto pt-12 pb-16">
@@ -70,7 +70,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
               Limpeza profissional na sua casa
             </span>
@@ -83,7 +83,7 @@ export default function Home() {
             className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6 leading-tight"
           >
             Sua casa{' '}
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-green-500 to-lime-500 bg-clip-text text-transparent">
               impecável
             </span>
             {' '}com um clique
@@ -106,7 +106,7 @@ export default function Home() {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link to={createPageUrl('Cadastro')}>
-              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all">
+              <Button size="lg" className="bg-gradient-to-r from-green-500 to-lime-600 hover:from-green-600 hover:to-lime-700 text-white px-8 shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all">
                 Começar Agora
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -126,13 +126,13 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="max-w-lg mx-auto"
         >
-          <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-emerald-50 dark:from-slate-800 dark:to-emerald-900/20 overflow-hidden">
+          <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-green-50 dark:from-slate-800 dark:to-green-900/20 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">A partir de</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">R$ 40</span>
+                    <span className="text-4xl font-bold text-green-600 dark:text-green-400">R$ 40</span>
                     <span className="text-slate-500">/hora</span>
                   </div>
                 </div>

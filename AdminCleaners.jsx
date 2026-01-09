@@ -220,7 +220,115 @@ export default function AdminCleaners() {
                         Remover
                       </Button>
                     )}
-                  </div>
+
+                    <div>
+                      <input type="file" className="hidden" id={`doc-upload-${cleaner.id}`} onChange={async (e)=>{
+                        const f = e.target.files && e.target.files[0];
+                        if (!f) return;
+                        try {
+                          let url = null;
+                          if (base44.api && base44.api.uploadFile) {
+                            const res = await base44.api.uploadFile(f);
+                            url = res?.url || null;
+                          }
+                          if (!url) {
+                            alert('Upload não disponível. Use a URL manual.');
+                            return;
+                          }
+                          const docs = cleaner.documents ? [...cleaner.documents] : [];
+                          docs.push({ url, uploaded_date: new Date().toISOString() });
+                          await base44.entities.CleanerProfile.update(cleaner.id, { documents: docs });
+                          queryClient.invalidateQueries({ queryKey: ['adminCleaners'] });
+                          toast.success('Documento enviado');
+                        } catch (err) {
+                          console.error(err); toast.error('Erro ao enviar');
+                        }
+                      }} />
+                      <label htmlFor={`doc-upload-${cleaner.id}`} className="btn btn-sm btn-ghost text-sm">Enviar Documento</label>
+
+                      {/* Review & verify */}
+                      <div className="ml-3 inline-block">
+                        <details className="mt-2">
+                          <summary className="text-sm text-slate-600 cursor-pointer">Ver documentos ({(cleaner.documents || []).length})</summary>
+                          <div className="mt-2 space-y-2">
+                            {(cleaner.documents || []).map((d, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-800">
+                                <a href={d.url} target="_blank" rel="noreferrer" className="text-sm text-emerald-600">{d.label || d.url}</a>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-slate-500">{new Date(d.uploaded_date).toLocaleString()}</span>
+                                  <Button size="sm" variant="ghost" onClick={async ()=>{
+                                    if (!confirm('Remover este documento?')) return;
+                                    const docs = cleaner.documents ? cleaner.documents.filter((_, i)=>i !== idx) : [];
+                                    await base44.entities.CleanerProfile.update(cleaner.id, { documents: docs });
+                                    queryClient.invalidateQueries({ queryKey: ['adminCleaners'] });
+                                    toast.success('Documento removido');
+                                  }}>Remover</Button>
+                                </div>
+                              </div>
+                            ))}
+
+                            <div className="pt-2 border-t mt-2">
+                              <Label htmlFor={`verify_note_${cleaner.id}`}>Observação (opcional)</Label>
+                              <input id={`verify_note_${cleaner.id}`} className="w-full p-2 border rounded" placeholder="Escreva uma observação que será registrada" />
+                              <div className="flex items-center gap-2 mt-2">
+                                <Button size="sm" onClick={async ()=>{
+                                  const note = document.getElementById(`verify_note_${cleaner.id}`).value || '';
+                                  if (!confirm('Aprovar a verificação dessa faxineira?')) return;
+                                  try {
+                                    const history = cleaner.verification_history ? [...cleaner.verification_history] : [];
+                                    history.push({ by: user.email, date: new Date().toISOString(), action: 'approved', note });
+                                    await base44.entities.CleanerProfile.update(cleaner.id, { verified: true, verification_history: history });
+                                    queryClient.invalidateQueries({ queryKey: ['adminCleaners'] });
+
+                                    // audit
+                                    try { const { auditLog } = await import('./utils/audit'); await auditLog({ actor: user.email, action: 'approve_cleaner', entity: 'cleaner', entity_id: cleaner.id, details: { note } }); } catch(e){ console.warn('audit failed', e); }
+
+                                    try {
+                                      if (base44.api && base44.api.sendInvite) {
+                                        await base44.api.sendInvite({ email: cleaner.user_email, type: 'verification_result', status: 'approved', note, from: user.email });
+                                      } else {
+                                        const { sendInvite } = await import('./utils/sendInvite');
+                                        try { await sendInvite({ email: cleaner.user_email, type: 'verification_result', status: 'approved', note, from: user.email }); } catch(e){ console.warn('Erro ao notificar via servidor local:', e); }
+                                      }
+                                    } catch (err) { console.warn('Erro ao notificar:', err); }
+
+                                    toast.success('Faxineira verificada!');
+                                  } catch (err) { console.error(err); toast.error('Erro ao aprovar'); }
+                                }}>Aprovar</Button>
+
+                                <Button size="sm" variant="destructive" onClick={async ()=>{
+                                  const note = document.getElementById(`verify_note_${cleaner.id}`).value || '';
+                                  if (!confirm('Rejeitar a verificação dessa faxineira?')) return;
+                                  try {
+                                    const history = cleaner.verification_history ? [...cleaner.verification_history] : [];
+                                    history.push({ by: user.email, date: new Date().toISOString(), action: 'rejected', note });
+                                    await base44.entities.CleanerProfile.update(cleaner.id, { verified: false, verification_history: history });
+                                    queryClient.invalidateQueries({ queryKey: ['adminCleaners'] });
+
+                                    // audit
+                                    try { const { auditLog } = await import('./utils/audit'); await auditLog({ actor: user.email, action: 'reject_cleaner', entity: 'cleaner', entity_id: cleaner.id, details: { note } }); } catch(e){ console.warn('audit failed', e); }
+
+                                    try {
+                                      if (base44.api && base44.api.sendInvite) {
+                                        await base44.api.sendInvite({ email: cleaner.user_email, type: 'verification_result', status: 'rejected', note, from: user.email });
+                                      } else {
+                                        const { sendInvite } = await import('./utils/sendInvite');
+                                        try { await sendInvite({ email: cleaner.user_email, type: 'verification_result', status: 'rejected', note, from: user.email }); } catch(e){ console.warn('Erro ao notificar via servidor local:', e); }
+                                      }
+                                    } catch (err) { console.warn('Erro ao notificar:', err); }
+
+                                    toast.success('Verificação rejeitada.');
+                                  } catch (err) { console.error(err); toast.error('Erro ao rejeitar'); }
+                                }}>Rejeitar</Button>
+
+                              </div>
+                            </div>
+
+                          </div>
+                        </details>
+                      </div>
+
+                    </div>
                 </CardContent>
               </Card>
             </motion.div>

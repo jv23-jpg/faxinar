@@ -29,6 +29,15 @@ export default function Precos() {
     { hours: 8, base: 180, withProducts: 210, total: 252, totalWithProducts: 282 },
   ];
 
+  const POS_OBRA_MULTIPLIER = 5/3; // Pós-Obra multiplier (8h => R$300)
+  const posPriceTable = priceTable.map((row) => {
+    const base = parseFloat((row.base * POS_OBRA_MULTIPLIER).toFixed(2));
+    const withProducts = parseFloat((base + 30).toFixed(2));
+    const total = parseFloat((base * 1.4).toFixed(2));
+    const totalWithProducts = parseFloat((total + 30).toFixed(2));
+    return { hours: row.hours, base, withProducts, total, totalWithProducts };
+  });
+
   const inclusions = [
     'Profissional verificada e treinada',
     'Limpeza completa de todos os cômodos',
@@ -222,6 +231,48 @@ export default function Precos() {
       </motion.div>
 
 
+
+      {/* Pós-Obra Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.65 }}
+      >
+        <Card className="border-0 shadow-lg overflow-hidden mt-6">
+          <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-500">
+            <CardTitle className="text-white flex items-center gap-2">
+              <Calculator className="w-5 h-5" />
+              Tabela Pós-Obra (8h: R$ 300 / Faxineira: R$ 250)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Horas</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Serviço Base</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Com Produtos</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Total (com taxa)</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">Total + Produtos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {posPriceTable.map((row, index) => (
+                    <tr key={row.hours} className={`border-t border-slate-100 dark:border-slate-700 ${index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'}`}>
+                      <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{row.hours}h</td>
+                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400">R$ {row.base.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400">R$ {row.withProducts.toFixed(2)}</td>
+                      <td className="px-6 py-4 font-semibold text-emerald-600 dark:text-emerald-400">R$ {row.total.toFixed(2)}</td>
+                      <td className="px-6 py-4 font-semibold text-teal-600 dark:text-teal-400">R$ {row.totalWithProducts.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* CTA */}
       <div className="text-center">

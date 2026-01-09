@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faxinar — Painel</title>
+    <meta name="description" content="Sistema simples de serviços com painel admin para definir conta destino e calculadora que mostra só o total ao cliente." />
+      <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    /* ========= INÍCIO DO CSS (base do projeto) ========= */
+    /* ===== VARIÁVEIS CSS ===== */
+    :root {
+        --primary-dark: #0b6b2d;
+        --primary-light: #5cd65c;
+        --primary-mid: #2d8a42;
+        --secondary-dark: #0c2461;
+        --secondary-light: #f7d716;
+        --admin-dark: #2c3e50;
+        --admin-light: #3498db;
+        --accent-gradient: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+        --secondary-gradient: linear-gradient(135deg, var(--secondary-dark) 0%, var(--secondary-light) 100%);
+        --admin-gradient: linear-gradient(135deg, var(--admin-dark) 0%, var(--admin-light) 100%);
+        --card-bg: #ffffff;
+        --text-muted: #666;
+        --light-bg: #f8f9fa;
+        --border-color: #e2e2e2;
+        --success: #28a745;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --info: #17a2b8;
+        --shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --radius: 10px;
+        --transition: all 0.3s ease;
+    }
+
+    /* ===== RESET E BASE ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; min-height: 100vh; background-color: var(--light-bg); }
+
+    /* Header */
+    header { background: var(--accent-gradient); color: white; padding: 18px 20px; }
+    .header-inner { max-width: 1200px; margin: 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .logo { font-weight:800; font-size:20px; letter-spacing:0.4px; display:flex; align-items:center; gap:10px; }
+    .nav { display:flex; gap:12px; }
+    .btn { padding:10px 16px; border-radius:8px; background:var(--primary-dark); color:white; border:none; cursor:pointer; font-weight:600; }
+    .btn-outline { background:transparent; border:2px solid white; color:white; }
+
+    main { max-width:1200px; margin: 30px auto; padding: 0 20px; }
+    .grid { display:grid; grid-template-columns: 1fr 380px; gap:30px; align-items:start; }
+
+    /* Card */
+    .card { background:var(--card-bg); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+    h2 { color:var(--primary-dark); margin-bottom:12px; }
+    p { color:var(--text-muted); }
+
+    /* Services */
+    .services { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; }
+    .service { padding:16px; border-radius:8px; background:var(--light-bg); border:1px solid var(--border-color); text-align:center; }
+    .service h4 { color:var(--primary-dark); margin-bottom:8px; }
+
+    /* Pricing calculator */
+    .price-row { display:flex; gap:10px; align-items:center; }
+    .form-control { width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); }
+    .calc-result { margin-top:18px; text-align:center; }
+    .total { font-size:28px; font-weight:800; color:var(--primary-dark); }
+
+    /* Admin modal */
+    .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); z-index:2000; }
+    .modal.active { display:flex; }
+    .modal-body { width:100%; max-width:520px; background:white; border-radius:10px; padding:20px; }
+    label { display:block; margin-bottom:8px; font-weight:600; color:var(--primary-dark); }
+
+    /* Footer */
+    footer { margin-top:50px; padding:30px 20px; background:#2c3e50; color:#ecf0f1; text-align:center; }
+
+    /* small screens */
+    @media (max-width:980px){ .grid{ grid-template-columns: 1fr; } .nav { display:none; } }
+
+    /* ====== STYLES: REGISTRATION FLOW ====== */
+    .reg-step { padding:8px 0; }
+    #registration { border: 1px solid var(--border-color); box-shadow: var(--shadow); }
+    #registration h3 { color: var(--primary-dark); }
+    .btn-outline { background: transparent; border: 2px solid var(--primary-dark); color: var(--primary-dark); }
+    @media (max-width:600px){ #registration { padding:14px; } .price-row{flex-direction:column;} }
+
+    /* ========= FIM DO CSS ========= */
+    </style>
+  </head>
+  <body>
+    <div id="root" style="display:none;"></div>
+    <header>
+      <div class="header-inner">
+        <div class="logo">Faxinar <small style="opacity:0.85; font-weight:600;">— utilitário</small></div>
+        <nav class="nav">
+          <button class="btn" id="open-register">Criar conta</button>
+          <button class="btn" id="open-admin">Admin</button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="grid">
+        <!-- Conteúdo principal -->
+        <div>
+          <div class="card">
+            <h2>Calcule o valor do serviço</h2>
+            <p>Insira os dados do serviço e veja apenas o valor final que o cliente pagará.</p>
+
+            <div style="margin-top:16px">
+              <div class="price-row">
+                <input id="service-name" class="form-control" placeholder="Nome do serviço (ex: Faxina Quarto)" />
+                <input id="service-price" class="form-control" type="number" min="0" step="0.01" placeholder="Preço unitário (R$)" />
+              </div>
+              <div class="price-row" style="margin-top:10px">
+                <input id="service-quantity" class="form-control" type="number" min="1" step="1" value="1" placeholder="Quantidade" />
+                <select id="service-type" class="form-control">
+                  <option value="standard">Padrão</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+
+              <div class="calc-result card" id="calc-box">
+                <div style="font-size:14px; color:var(--text-muted)">Total a pagar</div>
+                <div class="total" id="total-value">R$ 0,00</div>
+                <div style="margin-top:10px; color:var(--text-muted);">O cliente não vê taxas internas — ele vê apenas o valor final.</div>
+                <div style="margin-top:16px; display:flex; gap:8px; justify-content:center;">
+                  <button id="btn-pay" class="btn">Simular Pagamento</button>
+                  <button id="btn-reset" class="btn btn-outline">Limpar</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h3>Serviços</h3>
+            <div class="services" id="services-list">
+              <div class="service">
+                <h4>Faxina Rápida</h4>
+                <div>R$ 80,00</div>
+              </div>
+              <div class="service">
+                <h4>Faxina Completa</h4>
+                <div>R$ 160,00</div>
+              </div>
+              <div class="service">
+                <h4>Passar Roupa</h4>
+                <div>R$ 50,00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h3>Contato</h3>
+            <p>Tem dúvida? Envie uma mensagem que responderemos em breve.</p>
+            <div style="margin-top:12px">
+              <input id="contact-name" class="form-control" placeholder="Seu nome" />
+              <input id="contact-email" class="form-control" placeholder="Seu e-mail" style="margin-top:8px" />
+              <textarea id="contact-msg" class="form-control" placeholder="Mensagem" style="margin-top:8px; min-height:90px"></textarea>
+              <div style="margin-top:10px; text-align:right">
+                <button id="contact-send" class="btn">Enviar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside>
+          <div class="card">
+            <h3>Pagar</h3>
+            <p id="pay-info">Após calcular, clique em <strong>Simular Pagamento</strong> para ver a confirmação. A conta destino é visível apenas ao administrador.</p>
+            <div style="margin-top:12px; text-align:center">
+              <div id="destination-status" style="margin-bottom:8px; color:var(--text-muted)">Conta destino: <span id="dest-flag">não configurada</span></div>
+              <button id="btn-confirm" class="btn" disabled>Confirmar Pagamento</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h3>Utilitários</h3>
+            <p>Pequenas ferramentas e atalhos úteis.</p>
+            <ul style="margin-top:10px; color:var(--text-muted)">
+              <li>Histórico mínimo local</li>
+              <li>Envio de contato</li>
+              <li>Painel admin para conta destino</li>
+            </ul>
+          </div>
+        </aside>
+
+      </section>
+    </main>
+
+    <!-- Registration Flow (Leidy Cleaner) -->
+    <section id="registration" class="hidden" style="max-width:900px; margin:40px auto; padding:0 20px;">
+      <!-- STEP 1: Cadastro Inicial -->
+      <div id="step-1" class="reg-step card">
+        <h2>Leidy Cleaner</h2>
+        <h3>Crie a sua conta</h3>
+        <p>Comece informando alguns dados de contato:</p>
+        <div style="margin-top:16px">
+          <div class="price-row">
+            <input id="r-name" class="form-control" placeholder="Nome completo" />
+            <input id="r-phone" class="form-control" placeholder="Telefone (DDD + número)" />
+          </div>
+          <div class="price-row" style="margin-top:10px">
+            <input id="r-cpf" class="form-control" placeholder="CPF (XXX.XXX.XXX-XX)" />
+            <input id="r-email" class="form-control" placeholder="E-mail" />
+          </div>
+          <div class="price-row" style="margin-top:10px">
+            <select id="r-state" class="form-control">
+              <option value="">Selecione seu estado</option>
+            </select>
+            <select id="r-city" class="form-control">
+              <option value="">Selecione sua cidade</option>
+            </select>
+          </div>
+          <div id="err-step1" style="color:var(--danger); margin-top:12px; display:none;"></div>
+        </div>
+        <div style="margin-top:20px; display:flex; gap:8px; justify-content:space-between; align-items:center">
+          <button id="reg-back" class="btn btn-outline" style="display:none">Voltar</button>
+          <div style="flex:1; text-align:right; color:var(--text-muted); font-size:14px">
+            Progresso: <span id="reg-progress">1 de 5</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; text-align:right">
+          <button id="reg-next" class="btn">Avançar</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Ganhos com Limpezas -->
+      <div id="step-2" class="reg-step card hidden">
+        <h2>Ganhos com limpezas</h2>
+        <p style="margin-bottom:10px;">Com o Leidy Cleaner, você define sua agenda e nós ofertamos limpezas de 1 a 8 horas. Os valores são tabelados por cidade e você pode visualizar os exemplos abaixo para <strong>Porto Alegre - Rio Grande do Sul</strong>:</p>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin:20px 0;">
+          <div>
+            <h4 style="color:var(--primary-dark); margin-bottom:10px">De 1 a 4 horas</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:14px;">
+              <tr style="background:var(--light-bg)">
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>1h</strong></td>
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>2h</strong></td>
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>3h</strong></td>
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>4h</strong></td>
+              </tr>
+              <tr>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 41,00</td>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 61,00</td>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 81,00</td>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 101,00</td>
+              </tr>
+            </table>
+          </div>
+          <div>
+            <h4 style="color:var(--primary-dark); margin-bottom:10px">De 5 a 8 horas</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:14px;">
+              <tr style="background:var(--light-bg)">
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>5h</strong></td>
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>6h</strong></td>
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>7h</strong></td>
+                <td style="padding:8px; border:1px solid var(--border-color)"><strong>8h</strong></td>
+              </tr>
+              <tr>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 121,00</td>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 141,00</td>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 161,00</td>
+                <td style="padding:8px; border:1px solid var(--border-color); text-align:center">R$ 181,00</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div style="background:var(--light-bg); padding:12px; border-radius:8px; margin:15px 0; font-size:14px">
+          <strong>Como calcular:</strong><br/>
+          • R$ 21,00 - Valor base (inclui 2 passagens de ônibus)<br/>
+          • R$ 20,00 - Valor da hora de serviço
+        </div>
+
+        <p style="font-size:13px; color:var(--text-muted);">Em algumas cidades os clientes podem solicitar ao profissional que leve alguns produtos de limpeza básicos. Nessas limpezas será incluído um adicional ao valor base da limpeza que pode variar de cidade para cidade.</p>
+
+        <div style="margin-top:20px; display:flex; gap:8px; justify-content:space-between; align-items:center">
+          <button id="reg-back-2" class="btn btn-outline" onclick="document.getElementById('reg-back').click()">Voltar</button>
+          <div style="flex:1; text-align:right; color:var(--text-muted); font-size:14px">
+            Progresso: <span>2 de 5</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; text-align:right">
+          <button id="reg-next-2" class="btn" onclick="document.getElementById('reg-next').click()">Avançar</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Exemplo de Ganhos -->
+      <div id="step-3" class="reg-step card hidden">
+        <h2>Leidy Cleaner</h2>
+        <h3>Exemplo de possíveis ganhos</h3>
+        <p style="margin:10px 0;">A profissional <strong>Donie</strong> utiliza o app há mais de 6 meses. Ela disponibiliza sua agenda de segunda à sábados, para realizar limpezas, das 8h às 18h.</p>
+        
+        <div style="background:var(--light-bg); padding:14px; border-radius:8px; margin:15px 0; text-align:center">
+          <div style="font-size:18px; font-weight:600; color:var(--primary-dark)">Donie</div>
+          <div style="font-size:14px; color:var(--text-muted)">87 limpezas realizadas | ⭐ 4.9</div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin:15px 0; font-size:14px;">
+          <tr style="background:var(--light-bg)">
+            <td style="padding:10px; border:1px solid var(--border-color)"><strong>Descrição</strong></td>
+            <td style="padding:10px; border:1px solid var(--border-color); text-align:right"><strong>Valor</strong></td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border:1px solid var(--border-color)">2 limpezas de 2 horas</td>
+            <td style="padding:10px; border:1px solid var(--border-color); text-align:right">R$ 122,00</td>
+          </tr>
+          <tr style="background:#f0f0f0">
+            <td style="padding:10px; border:1px solid var(--border-color)">4 limpezas de 3 horas</td>
+            <td style="padding:10px; border:1px solid var(--border-color); text-align:right">R$ 324,00</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border:1px solid var(--border-color)">8 limpezas de 4 horas</td>
+            <td style="padding:10px; border:1px solid var(--border-color); text-align:right">R$ 808,00</td>
+          </tr>
+          <tr style="background:#f0f0f0">
+            <td style="padding:10px; border:1px solid var(--border-color)">6 limpezas de 6 horas</td>
+            <td style="padding:10px; border:1px solid var(--border-color); text-align:right">R$ 846,00</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border:1px solid var(--border-color)">5 limpezas de 8 horas</td>
+            <td style="padding:10px; border:1px solid var(--border-color); text-align:right">R$ 905,00</td>
+          </tr>
+        </table>
+
+        <div style="background:var(--primary-dark); color:white; padding:15px; border-radius:8px; margin:15px 0; font-size:14px">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px">
+            <div><div style="font-size:12px; opacity:0.8">Base</div><div style="font-size:18px; font-weight:800">R$ 504,00</div></div>
+            <div><div style="font-size:12px; opacity:0.8">Mão de obra (121h)</div><div style="font-size:18px; font-weight:800">R$ 2.140,00</div></div>
+            <div><div style="font-size:12px; opacity:0.8"><strong>Total (25 limpezas)</strong></div><div style="font-size:20px; font-weight:800">R$ 3.005,00</div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; display:flex; gap:8px; justify-content:space-between; align-items:center">
+          <button id="reg-back-3" class="btn btn-outline" onclick="document.getElementById('reg-back').click()">Voltar</button>
+          <div style="flex:1; text-align:right; color:var(--text-muted); font-size:14px">
+            Progresso: <span>3 de 5</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; text-align:right">
+          <button id="reg-next-3" class="btn" onclick="document.getElementById('reg-next').click()">Avançar</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Finalização de Cadastro -->
+      <div id="step-4" class="reg-step card hidden">
+        <h2>Leidy Cleaner</h2>
+        <h3>Finalize o seu cadastro</h3>
+        <p>Crie a sua senha e aceite os termos de uso:</p>
+        <div style="margin-top:16px">
+          <div class="price-row">
+            <input id="r-pass" class="form-control" type="password" placeholder="Senha (mín. 6 caracteres)" />
+            <input id="r-pass-confirm" class="form-control" type="password" placeholder="Confirmar senha" />
+          </div>
+          <div style="margin-top:12px; display:flex; align-items:flex-start; gap:10px">
+            <input id="r-terms" type="checkbox" style="margin-top:4px" />
+            <label style="margin:0; font-weight:normal; color:var(--text-muted)">Ao continuar declaro que li e aceito os termos de uso e serviço.</label>
+          </div>
+          <div id="err-step4" style="color:var(--danger); margin-top:12px; display:none;"></div>
+        </div>
+        <div style="margin-top:20px; display:flex; gap:8px; justify-content:space-between; align-items:center">
+          <button id="reg-back-4" class="btn btn-outline" onclick="document.getElementById('reg-back').click()">Voltar</button>
+          <div style="flex:1; text-align:right; color:var(--text-muted); font-size:14px">
+            Progresso: <span>4 de 5</span>
+          </div>
+        </div>
+        <div style="margin-top:10px; text-align:right">
+          <button id="reg-next-4" class="btn" onclick="document.getElementById('reg-next').click()">Criar cadastro</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Treinamento -->
+      <div id="step-5" class="reg-step card hidden">
+        <h2 style="font-size:28px; color:var(--danger); text-align:center">VOCÊ ESTÁ EM FASE DE TREINAMENTO!</h2>
+        <h3 style="text-align:center">Vamos lá!</h3>
+        <p style="text-align:center; margin:10px 0">Para ativar a sua conta e começar a receber limpezas é necessário finalizar as etapas abaixo. Leia com atenção e descubra como o aplicativo funciona, como você recebe limpezas, seus deveres, direitos e muito mais.</p>
+        
+        <div style="margin:20px 0">
+          <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:15px">
+            <input type="checkbox" class="training-check" data-key="alignment" />
+            <div style="flex:1">
+              <div style="font-weight:600; color:var(--primary-dark)">1. Alinhamento com a Leidy Cleaner</div>
+              <p style="margin:4px 0; font-size:14px; color:var(--text-muted)">Conheça o nosso papel, descubra como oferecer limpezas, seus direitos, deveres, etc.</p>
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:15px">
+            <input type="checkbox" class="training-check" data-key="photo" />
+            <div style="flex:1">
+              <div style="font-weight:600; color:var(--primary-dark)">2. Cadastre sua foto de perfil</div>
+              <p style="margin:4px 0; font-size:14px; color:var(--text-muted)">Essa é a foto que os clientes vão ver quando estiverem procurando por você.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:15px">
+            <input type="checkbox" class="training-check" data-key="presentation" />
+            <div style="flex:1">
+              <div style="font-weight:600; color:var(--primary-dark)">3. Escreva sua apresentação</div>
+              <p style="margin:4px 0; font-size:14px; color:var(--text-muted)">Um pequeno texto escrito por você para se apresentar aos clientes.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:15px">
+            <input type="checkbox" class="training-check" data-key="verify" />
+            <div style="flex:1">
+              <div style="font-weight:600; color:var(--primary-dark)">4. Verificar seu cadastro</div>
+              <p style="margin:4px 0; font-size:14px; color:var(--text-muted)">Envie algumas informações adicionais para sabermos que você é realmente você.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:15px">
+            <input type="checkbox" class="training-check" data-key="chat" />
+            <div style="flex:1">
+              <div style="font-weight:600; color:var(--primary-dark)">5. Chamar atendente no chat</div>
+              <p style="margin:4px 0; font-size:14px; color:var(--text-muted)">Nos avise que você terminou o alinhamento e descubra como falar com a gente.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#e3f2fd; border:1px solid #90caf9; padding:12px; border-radius:8px; margin:15px 0; font-size:13px">
+          <strong>💡 Dica:</strong> Se você estiver com dificuldade em usar o aplicativo ou precisar de ajuda, nos chame no suporte (🔄) ou procure a ajuda de algum familiar.
+        </div>
+
+        <div style="text-align:center; margin-top:20px">
+          <button id="btn-start-training" class="btn" style="padding:14px 40px; font-size:16px">Começar alinhamento</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© 2026 Faxinar — Versão de demonstração</div>
+    </footer>
+
+    <!-- Admin modal -->
+    <div id="admin-modal" class="modal" aria-hidden="true">
+      <div class="modal-body card">
+        <h2>Painel Admin</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px">Configure a conta para onde os valores serão enviados (visível apenas no painel Admin).</p>
+        <div id="admin-content">
+          <label>Nome do titular</label>
+          <input id="admin-account-name" class="form-control" placeholder="Nome do titular" />
+          <label style="margin-top:8px">Banco</label>
+          <input id="admin-account-bank" class="form-control" placeholder="Banco (ex: 001 - Banco Demo)" />
+          <label style="margin-top:8px">Agência / Conta</label>
+          <input id="admin-account-number" class="form-control" placeholder="Agência - Conta" />
+
+          <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end">
+            <button id="admin-save" class="btn">Salvar</button>
+            <button id="admin-close" class="btn btn-outline">Fechar</button>
+          </div>
+
+          <div style="margin-top:10px; color:var(--text-muted)" id="admin-saved-note"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap: expose a minimal base44.api stub so index.html can be the orchestrator of app features -->
+    <script>
+      (function(){
+        window.base44 = window.base44 || {};
+        window.base44.api = window.base44.api || {};
+        // If a sendInvite implementation is not provided by backend, use the SPA server endpoint
+        window.base44.api.sendInvite = window.base44.api.sendInvite || async function(payload){
+          const res = await fetch('/api/send-invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (!res.ok) {
+            const body = await res.json().catch(()=>({}));
+            const err = new Error(body.error || 'send-invite failed');
+            err.status = res.status;
+            throw err;
+          }
+          return res.json();
+        };
+      })();
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <script>
+    // ======= JavaScript para interação =======
+    (function(){
+      // Helpers
+      const $ = id => document.getElementById(id);
+
+      // Load admin account from localStorage
+      function loadAdmin() {
+        try {
+          return JSON.parse(localStorage.getItem('faxinar.adminAccount') || 'null');
+        } catch(e){ return null; }
+      }
+      function saveAdmin(obj){ localStorage.setItem('faxinar.adminAccount', JSON.stringify(obj)); }
+
+      // Update destination status on UI
+      function refreshDestinationUI(){
+        const acc = loadAdmin();
+        const el = $('dest-flag');
+        if (acc && acc.name && acc.bank && acc.number){
+          el.textContent = 'configurada';
+          $('btn-confirm').disabled = false;
+        } else {
+          el.textContent = 'não configurada';
+          $('btn-confirm').disabled = true;
+        }
+      }
+
+      // Price calculation logic
+      function calculateTotal(){
+        const price = parseFloat($('service-price').value || '0');
+        const qty = parseInt($('service-quantity').value || '1', 10);
+        const type = $('service-type').value;
+        if (!price || price <= 0 || !qty || qty <= 0) return 0;
+
+        // internal rules (fees, discounts) are applied here but not shown as percentages to client
+        let subtotal = price * qty;
+        // Example: apply premium multiplier internally (not shown as percentage)
+        if (type === 'premium') subtotal *= 1.25; // internal markup, client sees only the final value
+
+        // Optional internal fee (kept hidden) — for demo, 5% fee applied internally
+        const fee = subtotal * 0.05; // not shown to client
+        const total = subtotal + fee;
+        return round(total);
+      }
+
+      function round(v){ return Math.round(v*100)/100; }
+
+      function formatBRL(v){ return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+      // Update UI total
+      function updateTotalUI(){
+        const total = calculateTotal();
+        $('total-value').textContent = formatBRL(total || 0);
+      }
+
+      // Events
+      ['service-price','service-quantity','service-type'].forEach(id => {
+        $(id).addEventListener('input', updateTotalUI);
+      });
+
+      $('btn-reset').addEventListener('click', ()=>{
+        $('service-name').value=''; $('service-price').value=''; $('service-quantity').value='1'; $('service-type').value='standard'; updateTotalUI();
+      });
+
+      // Simulate payment (client sees only confirmation)
+      $('btn-pay').addEventListener('click', ()=>{
+        const total = calculateTotal();
+        if (!total || total <= 0) return alert('Insira um preço válido para calcular.');
+        // record a minimal local history
+        const history = JSON.parse(localStorage.getItem('faxinar.payHistory') || '[]');
+        history.push({ name: $('service-name').value || 'Serviço', total, at: new Date().toISOString() });
+        localStorage.setItem('faxinar.payHistory', JSON.stringify(history));
+        alert('Pagamento simulado: ' + formatBRL(total) + '\nA conta destino não é exibida ao cliente.');
+      });
+
+      // Confirm (client) — shows confirmation and stores a record
+      $('btn-confirm').addEventListener('click', ()=>{
+        const total = calculateTotal();
+        if (!total) return alert('Calcule o valor primeiro.');
+        alert('Pagamento confirmado: ' + formatBRL(total) + '\nO provedor receberá o valor conforme conta configurada (visível ao admin).');
+      });
+
+      // Contact form
+      $('contact-send').addEventListener('click', async ()=>{
+        const name = $('contact-name').value.trim();
+        const email = $('contact-email').value.trim();
+        const msg = $('contact-msg').value.trim();
+        if (!name || !email || !msg) return alert('Preencha todos os campos.');
+        try {
+          // Demo: store locally (in production, post to backend)
+          const contacts = JSON.parse(localStorage.getItem('faxinar.contacts') || '[]');
+          contacts.push({ name, email, msg, at: new Date().toISOString() });
+          localStorage.setItem('faxinar.contacts', JSON.stringify(contacts));
+          $('contact-name').value=''; $('contact-email').value=''; $('contact-msg').value='';
+          alert('Mensagem enviada. Responderemos em breve.');
+        } catch(e){ alert('Erro ao enviar.'); }
+      });
+
+      // Admin modal handling
+      const adminModal = $('admin-modal');
+      $('open-admin').addEventListener('click', ()=>{
+        // For demo, ask a simple password
+        const pass = prompt('Senha admin (demo):');
+        if (pass !== 'admin') return alert('Senha incorreta.');
+        // open modal
+        adminModal.classList.add('active');
+        const acc = loadAdmin();
+        $('admin-account-name').value = acc?.name || '';
+        $('admin-account-bank').value = acc?.bank || '';
+        $('admin-account-number').value = acc?.number || '';
+      });
+
+      $('admin-close').addEventListener('click', ()=>{ adminModal.classList.remove('active'); });
+
+      $('admin-save').addEventListener('click', ()=>{
+        const acc = { name: $('admin-account-name').value.trim(), bank: $('admin-account-bank').value.trim(), number: $('admin-account-number').value.trim() };
+        if (!acc.name || !acc.bank || !acc.number) return alert('Preencha todos os campos da conta.');
+        saveAdmin(acc);
+        $('admin-saved-note').textContent = 'Conta salva com sucesso!';
+        refreshDestinationUI();
+      });
+
+      // init
+      refreshDestinationUI();
+      updateTotalUI();
+
+      // Small accessibility: close modal on ESC
+      window.addEventListener('keydown', e => { if (e.key === 'Escape') adminModal.classList.remove('active'); });
+
+      /* ====== REGISTRATION FLOW SCRIPT ====== */
+      const STATES = {
+        'RS': ['Porto Alegre','Caxias do Sul','Pelotas'],
+        'SP': ['São Paulo','Campinas','Santos'],
+        'RJ': ['Rio de Janeiro','Niterói','Petrópolis']
+      };
+
+      const reg = {
+        step: 1,
+        state: {},
+      };
+
+      function el(id){ return document.getElementById(id); }
+
+      function showReg(show = true){
+        const regSec = el('registration');
+        const grid = document.querySelector('.grid');
+        if (show){ regSec.classList.remove('hidden'); grid.classList.add('hidden'); window.scrollTo({top: regSec.offsetTop - 20, behavior:'smooth'}); } else { regSec.classList.add('hidden'); grid.classList.remove('hidden'); }
+      }
+
+      // Populate states
+      function populateStates(){
+        const sel = el('r-state');
+        Object.keys(STATES).forEach(k => { const opt = document.createElement('option'); opt.value = k; opt.textContent = k; sel.appendChild(opt); });
+      }
+
+      // Update cities when state changes
+      el('r-state').addEventListener('change', ()=>{
+        const v = el('r-state').value;
+        const city = el('r-city'); city.innerHTML = '<option value="">Selecione sua cidade</option>';
+        if (STATES[v]) STATES[v].forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; city.appendChild(o); });
+      });
+
+      // CPF validation (format + check digits)
+      function validateCPF(str){
+        if (!str) return false;
+        const s = str.replace(/[\D]/g,''); if (s.length !== 11) return false;
+        if (/^(\d)\1+$/.test(s)) return false;
+        const calc = (t) => {
+          let d = 0; for (let i=0;i<t;i++) d += parseInt(s[i]) * (t+1-i);
+          d = ((10 * d) % 11) % 10; return d;
+        };
+        return calc(9) === parseInt(s[9]) && calc(10) === parseInt(s[10]);
+      }
+
+      // Email validation
+      function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+      // Save/load registration state
+      function saveReg(){
+        const data = {
+          name: el('r-name').value.trim(), phone: el('r-phone').value.trim(), cpf: el('r-cpf').value.trim(), email: el('r-email').value.trim(), state: el('r-state').value, city: el('r-city').value,
+          pass: el('r-pass')?.value || '', terms: !!el('r-terms')?.checked,
+          training: Array.from(document.querySelectorAll('.training-check')).reduce((a,i)=>{ a[i.dataset.key]=i.checked; return a; },{})
+        };
+        localStorage.setItem('leidy.registration', JSON.stringify(data));
+      }
+      function loadReg(){
+        try{
+          const data = JSON.parse(localStorage.getItem('leidy.registration') || '{}');
+          if (data.name) el('r-name').value = data.name; if (data.phone) el('r-phone').value = data.phone; if (data.cpf) el('r-cpf').value = data.cpf; if (data.email) el('r-email').value = data.email;
+          if (data.state) { el('r-state').value = data.state; el('r-state').dispatchEvent(new Event('change')); }
+          if (data.city) el('r-city').value = data.city;
+          if (data.pass) el('r-pass').value = data.pass; if (data.terms) el('r-terms').checked = true;
+          if (data.training) Object.keys(data.training).forEach(k=>{ const elc = document.querySelector('.training-check[data-key="'+k+'"]'); if (elc) elc.checked = data.training[k]; });
+        }catch(e){}
+      }
+
+      // Navigation
+      function showStep(n){
+        reg.step = n; for (let i=1;i<=5;i++){ const s = el('step-'+i); if (s) s.classList.toggle('hidden', i!==n); }
+        el('reg-progress').textContent = n + ' de 5';
+        // update buttons
+        el('reg-back').style.display = n===1 ? 'none' : 'inline-flex';
+        el('reg-next').textContent = n===5 ? 'Concluir' : 'Avançar';
+        saveReg();
+      }
+
+      function validateStep(n){
+        if (n===1){
+          const name = el('r-name').value.trim(); const phone = el('r-phone').value.trim(); const cpf = el('r-cpf').value.trim(); const email = el('r-email').value.trim(); const state = el('r-state').value; const city = el('r-city').value;
+          const err = el('err-step1'); err.style.display = 'none'; err.textContent = '';
+          if (!name || !phone || !cpf || !email || !state || !city) { err.textContent = 'Preencha todos os campos obrigatórios.'; err.style.display='block'; return false; }
+          if (!validateCPF(cpf)) { err.textContent = 'CPF inválido.'; err.style.display='block'; return false; }
+          if (!validateEmail(email)) { err.textContent = 'E-mail inválido.'; err.style.display='block'; return false; }
+          return true;
+        }
+        if (n===4){
+          const pass = el('r-pass').value||''; const passc = el('r-pass-confirm').value||''; const terms = el('r-terms').checked; const err = el('err-step4'); err.style.display='none'; err.textContent = '';
+          if (!pass || !passc) { err.textContent='Preencha as senhas.'; err.style.display='block'; return false; }
+          if (pass.length < 6) { err.textContent='Senha precisa ter ao menos 6 caracteres.'; err.style.display='block'; return false; }
+          if (pass !== passc) { err.textContent='As senhas não coincidem.'; err.style.display='block'; return false; }
+          if (!terms) { err.textContent='Você precisa aceitar os termos para continuar.'; err.style.display='block'; return false; }
+          return true;
+        }
+        return true;
+      }
+
+      // Step button events
+      el('reg-next').addEventListener('click', ()=>{
+        if (reg.step === 5){
+          // finalize registration
+          saveReg();
+          alert('Cadastro criado com sucesso! Você será redirecionada para o painel de treinamento.');
+          showStep(5);
+          return;
+        }
+        if (!validateStep(reg.step)) return;
+        showStep(reg.step+1);
+      });
+
+      el('reg-back').addEventListener('click', ()=>{ if (reg.step>1) showStep(reg.step-1); });
+
+      // Open registration button
+      el('open-register').addEventListener('click', ()=>{ populateStates(); loadReg(); showReg(true); showStep(1); });
+
+      // Training start
+      el('btn-start-training').addEventListener('click', ()=>{
+        saveReg(); alert('Etapas de treinamento iniciadas. Boa sorte!');
+      });
+
+      // Persist changes on input
+      ['r-name','r-phone','r-cpf','r-email','r-state','r-city','r-pass','r-pass-confirm','r-terms'].forEach(id => { const elid = el(id); if (elid) elid.addEventListener('input', saveReg); if (elid) elid.addEventListener('change', saveReg); });
+      document.querySelectorAll('.training-check').forEach(c => c.addEventListener('change', saveReg));
+
+      // allow closing registration (when clicking Open-Admin again) for convenience
+      el('open-admin').addEventListener('click', ()=>{ showReg(false); });
+
+      // If there is saved progress, offer to resume
+      (function resumeIfSaved(){ const s = localStorage.getItem('leidy.registration'); if (s){ const ok = confirm('Existe um cadastro em andamento. Deseja retomar?'); if (ok){ populateStates(); loadReg(); showReg(true); showStep(1); } }
+      })();
+
+    })();
+    </script>
+  </body>
+</html>
