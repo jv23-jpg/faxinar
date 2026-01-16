@@ -18,6 +18,12 @@
     "bank_name": {
       "type": "string"
     },
+    "account_number": {
+      "type": "string"
+    },
+    "account_digit": {
+      "type": "string"
+    },
     "agency_fee_percentage": {
       "type": "number",
       "default": 40

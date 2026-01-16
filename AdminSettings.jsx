@@ -30,7 +30,9 @@ export default function AdminSettings() {
     reward_threshold: 10,
     pix_key: '',
     pix_key_type: 'cpf',
-    bank_name: ''
+    bank_name: 'Comys Caixa',
+    account_number: '00082751988',
+    account_digit: '9'
   });
 
   useEffect(() => {
@@ -62,7 +64,9 @@ export default function AdminSettings() {
         reward_threshold: existingSettings.reward_threshold || 10,
         pix_key: existingSettings.pix_key || '',
         pix_key_type: existingSettings.pix_key_type || 'cpf',
-        bank_name: existingSettings.bank_name || ''
+        bank_name: existingSettings.bank_name || 'Comys Caixa',
+        account_number: existingSettings.account_number || '00082751988',
+        account_digit: existingSettings.account_digit || '9'
       });
     }
   }, [existingSettings]);
@@ -272,6 +276,26 @@ export default function AdminSettings() {
                 onChange={(e) => setSettings({ ...settings, bank_name: e.target.value })}
                 placeholder="Nome do banco"
               />
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="account_number">Número da Conta</Label>
+                <Input
+                  id="account_number"
+                  value={settings.account_number}
+                  onChange={(e) => setSettings({ ...settings, account_number: e.target.value })}
+                  placeholder="Número da conta"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="account_digit">Dígito da Conta</Label>
+                <Input
+                  id="account_digit"
+                  value={settings.account_digit}
+                  onChange={(e) => setSettings({ ...settings, account_digit: e.target.value })}
+                  placeholder="Dígito"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

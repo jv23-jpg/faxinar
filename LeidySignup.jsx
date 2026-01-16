@@ -70,7 +70,7 @@ export default function LeidySignup() {
     sendResumeEmail(form.email, link);
   };
 
-  const handleSendSMS = () => {
+  const handleSendSMS = async () => {
     const payload = { step, form };
     const token = createResumeToken(payload, 24 * 60);
     const link = generateResumeLink(token);
